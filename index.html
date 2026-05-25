@@ -683,31 +683,33 @@
 
 
 <!-- LOGIN SCREEN -->
-<div class="login-screen" id="loginScreen">
-  <div class="login-logo">🥟</div>
-  <div class="login-title">Teras Makesa</div>
-  <div class="login-sub">Gerobak Nona Silvi</div>
-  <div class="login-card">
-    <h2>🔐 Masuk Dulu Ya!</h2>
-    <div class="login-field">
-      <label>Username</label>
-      <input type="text" id="loginUser" placeholder="Username" autocomplete="off" inputmode="text">
+<div id="loginScreen" style="position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#9B0B22,#C8102E);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;">
+  <div style="font-size:60px;margin-bottom:8px;">🥟</div>
+  <div style="font-family:'Fredoka One',sans-serif;font-size:28px;color:white;margin-bottom:4px;">Teras Makesa</div>
+  <div style="font-size:12px;color:rgba(255,255,255,0.8);margin-bottom:28px;font-weight:600;">Gerobak Nona Silvi</div>
+  <div style="background:white;border-radius:20px;padding:24px 20px;width:100%;max-width:340px;">
+    <div style="font-size:17px;font-weight:900;text-align:center;margin-bottom:18px;">🔐 Masuk</div>
+    <div style="margin-bottom:12px;">
+      <div style="font-size:11px;font-weight:800;color:#9CA3AF;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;">Username</div>
+      <input id="inUser" type="text" placeholder="Username"
+        style="width:100%;padding:13px 14px;border:2px solid #F3E8EA;border-radius:12px;font-size:16px;font-family:Nunito,sans-serif;outline:none;box-sizing:border-box;">
     </div>
-    <div class="login-field">
-      <label>Password</label>
-      <input type="password" id="loginPass" placeholder="••••••" autocomplete="off"
-        onkeyup="if(event.key==='Enter') doLogin()">
+    <div style="margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:800;color:#9CA3AF;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;">Password</div>
+      <input id="inPass" type="password" placeholder="Password"
+        style="width:100%;padding:13px 14px;border:2px solid #F3E8EA;border-radius:12px;font-size:16px;font-family:Nunito,sans-serif;outline:none;box-sizing:border-box;">
     </div>
-    <div class="login-error" id="loginError">❌ Username atau password salah!</div>
-    <button class="btn-login" type="button" onclick="doLogin()">Masuk →</button>
+    <div id="loginErr" style="display:none;color:#C8102E;font-size:12px;font-weight:700;text-align:center;margin-bottom:10px;">❌ Username atau password salah!</div>
+    <button id="btnMasuk" type="button"
+      style="width:100%;padding:15px;background:linear-gradient(135deg,#9B0B22,#C8102E);color:white;border:none;border-radius:14px;font-size:16px;font-weight:900;font-family:Nunito,sans-serif;cursor:pointer;">
+      Masuk →
+    </button>
   </div>
 </div>
-
-<!-- LOGOUT BUTTON -->
-<button class="logout-btn" id="logoutBtn" onclick="doLogout()" style="display:none;">
+<button id="logoutBtn" type="button" onclick="doLogout()"
+  style="display:none;position:fixed;bottom:80px;right:16px;z-index:500;background:white;border:2px solid #F3E8EA;border-radius:50px;padding:8px 16px;font-size:12px;font-weight:800;color:#C8102E;cursor:pointer;font-family:Nunito,sans-serif;box-shadow:0 4px 20px rgba(0,0,0,0.1);">
   🚪 Keluar
 </button>
-
 <div class="app">
   <!-- HEADER -->
   <div class="header">
@@ -1020,6 +1022,7 @@ let isSyncing = false;
 
 // ── INIT ───────────────────────────────────────────
 function init() {
+  setupLogin();
   checkLogin();
   updateHeaderDate();
   setInterval(updateHeaderDate, 60000);
@@ -1664,36 +1667,13 @@ function deleteMenu(id) {
 
 
 // ── AUTH ────────────────────────────────────────────
-const USERS = { admin: 'admin' };
-
 function checkLogin() {
+  var ls = document.getElementById('loginScreen');
   if (localStorage.getItem('kasirLoggedIn') === '1') {
-    document.getElementById('loginScreen').style.display = 'none';
+    if (ls) ls.style.display = 'none';
     document.getElementById('logoutBtn').style.display = 'flex';
   } else {
-    document.getElementById('loginScreen').style.display = 'flex';
-  }
-}
-
-function doLogin() {
-  var userEl = document.getElementById('loginUser');
-  var passEl = document.getElementById('loginPass');
-  var errEl  = document.getElementById('loginError');
-  var user   = userEl ? userEl.value.trim().toLowerCase() : '';
-  var pass   = passEl ? passEl.value : '';
-  console.log('Login attempt:', user, pass.length + ' chars');
-  if (user === 'admin' && pass === 'admin') {
-    localStorage.setItem('kasirLoggedIn', '1');
-    var ls = document.getElementById('loginScreen');
-    var lb = document.getElementById('logoutBtn');
-    if (ls) { ls.style.display = 'none'; ls.style.visibility = 'hidden'; ls.style.pointerEvents = 'none'; }
-    if (lb) lb.style.display = 'flex';
-    if (errEl) errEl.style.display = 'none';
-    console.log('Login OK!');
-  } else {
-    if (errEl) errEl.style.display = 'block';
-    if (passEl) passEl.value = '';
-    console.log('Login FAILED');
+    if (ls) ls.style.display = 'flex';
   }
 }
 
@@ -1702,8 +1682,34 @@ function doLogout() {
   localStorage.removeItem('kasirLoggedIn');
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('logoutBtn').style.display = 'none';
-  document.getElementById('loginUser').value = '';
-  document.getElementById('loginPass').value = '';
+  document.getElementById('inUser').value = '';
+  document.getElementById('inPass').value = '';
+}
+
+function setupLogin() {
+  var btn = document.getElementById('btnMasuk');
+  var passInput = document.getElementById('inPass');
+  if (btn) {
+    btn.addEventListener('click', function() {
+      var u = (document.getElementById('inUser').value || '').trim().toLowerCase();
+      var p = document.getElementById('inPass').value || '';
+      var err = document.getElementById('loginErr');
+      if (u === 'admin' && p === 'admin') {
+        localStorage.setItem('kasirLoggedIn', '1');
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('logoutBtn').style.display = 'flex';
+        if (err) err.style.display = 'none';
+      } else {
+        if (err) err.style.display = 'block';
+        document.getElementById('inPass').value = '';
+      }
+    });
+  }
+  if (passInput) {
+    passInput.addEventListener('keyup', function(e) {
+      if (e.key === 'Enter') document.getElementById('btnMasuk').click();
+    });
+  }
 }
 
 // ── AUTO DELETE DATA > 7 HARI ───────────────────────
