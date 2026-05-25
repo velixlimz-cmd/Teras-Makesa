@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Teras Makesa</title>
+<title>Teras Makesa - Sistem Kasir</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -34,8 +34,8 @@ body{font-family:'Nunito',sans-serif;background:#FFF8F0;color:#1A0A0E;min-height
 #syncBar{display:none;padding:6px 16px;font-size:11px;font-weight:800;text-align:center;flex-shrink:0;}
 
 /* TABS */
-.tabs{display:flex;background:white;border-bottom:2px solid #F3E8EA;flex-shrink:0;}
-.tab{flex:1;padding:8px 4px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;font-size:10px;font-weight:700;color:#9CA3AF;border-bottom:3px solid transparent;margin-bottom:-2px;}
+.tabs{display:flex;background:white;border-bottom:2px solid #F3E8EA;flex-shrink:0;overflow-x:auto;}
+.tab{flex:1;padding:8px 4px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;font-size:10px;font-weight:700;color:#9CA3AF;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;}
 .tab-icon{font-size:18px;}
 .tab.active{color:#C8102E;border-bottom-color:#C8102E;}
 
@@ -236,6 +236,9 @@ body{font-family:'Nunito',sans-serif;background:#FFF8F0;color:#1A0A0E;min-height
 .emoji-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding:6px 16px;}
 .ep{aspect-ratio:1;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;background:#FAFAFA;border:2px solid transparent;}
 .ep.sel{border-color:#C8102E;background:#FFF5F5;}
+
+/* KELOLA AKUN */
+.si-actions{display:flex;gap:6px;flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -279,17 +282,11 @@ body{font-family:'Nunito',sans-serif;background:#FFF8F0;color:#1A0A0E;min-height
   </div>
   <div id="syncBar"></div>
 
-  <!-- TABS -->
-  <div class="tabs">
-    <div class="tab active" id="tab-kasir" onclick="goTab('kasir')"><span class="tab-icon">🧾</span>Kasir</div>
-    <div class="tab" id="tab-rekap" onclick="goTab('rekap')"><span class="tab-icon">📊</span>Rekap</div>
-    <div class="tab" id="tab-stok" onclick="goTab('stok')"><span class="tab-icon">📦</span>Stok</div>
-    <div class="tab" id="tab-history" onclick="goTab('history')"><span class="tab-icon">📋</span>History</div>
-    <div class="tab" id="tab-menu" onclick="goTab('menu')"><span class="tab-icon">🍽️</span>Menu</div>
-  </div>
+  <!-- TABS (akan diisi oleh JavaScript sesuai role) -->
+  <div class="tabs" id="tabsContainer"></div>
 
   <!-- PAGE KASIR -->
-  <div class="page active" id="page-kasir">
+  <div class="page" id="page-kasir">
     <div class="menu-section"><div class="section-label">Pilih Menu</div><div class="menu-grid" id="menuGrid"></div></div>
     <div class="cart-bar">
       <div class="cart-info">
@@ -300,7 +297,7 @@ body{font-family:'Nunito',sans-serif;background:#FFF8F0;color:#1A0A0E;min-height
     </div>
   </div>
 
-  <!-- PAGE REKAP -->
+  <!-- PAGE REKAP (Admin only) -->
   <div class="page" id="page-rekap">
     <div class="rekap-page">
       <div class="rekap-header"><div class="rh-label">☀️ Omset Hari Ini</div><div class="rh-amount" id="rOmset">Rp 0</div><div class="rh-sub" id="rSub">0 transaksi</div></div>
@@ -315,7 +312,7 @@ body{font-family:'Nunito',sans-serif;background:#FFF8F0;color:#1A0A0E;min-height
     </div>
   </div>
 
-  <!-- PAGE STOK -->
+  <!-- PAGE STOK (Admin only) -->
   <div class="page" id="page-stok">
     <div class="stok-page">
       <div class="stok-sum" id="stokSum"></div>
@@ -338,11 +335,22 @@ body{font-family:'Nunito',sans-serif;background:#FFF8F0;color:#1A0A0E;min-height
     </div>
   </div>
 
-  <!-- PAGE MENU -->
+  <!-- PAGE MENU (Admin only) -->
   <div class="page" id="page-menu">
     <div class="menu-page">
       <div id="menuManageList"></div>
       <button class="btn-add" onclick="openMenuForm(null)">➕ Tambah Menu Baru</button>
+    </div>
+  </div>
+
+  <!-- PAGE KELOLA AKUN (Admin only) -->
+  <div class="page" id="page-akun">
+    <div class="stok-page">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <div class="section-label">👥 Daftar Akun</div>
+        <button class="btn-add" style="width:auto; padding:8px 16px;" onclick="openAkunForm(null)">+ Tambah Akun</button>
+      </div>
+      <div class="stok-list" id="akunList"></div>
     </div>
   </div>
 
@@ -406,6 +414,24 @@ body{font-family:'Nunito',sans-serif;background:#FFF8F0;color:#1A0A0E;min-height
   </div>
 </div>
 
+<!-- OVERLAY AKUN FORM -->
+<div class="overlay" id="ovAkun" onclick="closeOv('ovAkun',event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><span class="sheet-title" id="akunFormTitle">👤 Tambah Akun</span><button class="btn-close" onclick="closeOvForce('ovAkun')">✕</button></div>
+    <div class="form-group"><label class="form-label">Nama Lengkap</label><input type="text" class="form-input" id="akunNama" placeholder="cth: Ahmad Fauzi"></div>
+    <div class="form-group"><label class="form-label">Username</label><input type="text" class="form-input" id="akunUsername" placeholder="cth: ahmad" autocomplete="off"></div>
+    <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="akunPassword" placeholder="******" autocomplete="off"></div>
+    <div class="form-group"><label class="form-label">Role</label>
+      <select class="form-input" id="akunRole" style="appearance:auto;">
+        <option value="kasir">👤 Kasir (hanya Kasir & History)</option>
+        <option value="admin">👑 Admin (akses penuh)</option>
+      </select>
+    </div>
+    <button class="btn-bayar" onclick="saveAkun()">💾 Simpan Akun</button>
+  </div>
+</div>
+
 <!-- SUCCESS -->
 <div class="success-overlay" id="successScr">
   <div style="font-size:70px;margin-bottom:8px;">✅</div>
@@ -444,6 +470,13 @@ var histFilter = 'hari';
 var editMenuId = null;
 var selEmoji = '🥟';
 
+// ══ AKUN ════════════════════════════════════════
+var akun = JSON.parse(localStorage.getItem('tm_akun')||'null') || [
+  {id:1, username:'admin', password:'admin', role:'admin', nama:'Administrator'},
+  {id:2, username:'kasir', password:'kasir', role:'kasir', nama:'Staff Kasir'}
+];
+var currentUser = null;
+
 // ══ AUTH ═════════════════════════════════════════
 document.getElementById('btnMasuk').addEventListener('click', doLogin);
 document.getElementById('inPass').addEventListener('keyup', function(e){ if(e.key==='Enter') doLogin(); });
@@ -452,8 +485,19 @@ document.getElementById('inUser').addEventListener('keyup', function(e){ if(e.ke
 function doLogin() {
   var u = (document.getElementById('inUser').value||'').trim().toLowerCase();
   var p = (document.getElementById('inPass').value||'');
-  if (u==='admin' && p==='admin') {
+  
+  var user = null;
+  for(var i=0; i<akun.length; i++) {
+    if(akun[i].username === u && akun[i].password === p) {
+      user = akun[i];
+      break;
+    }
+  }
+  
+  if(user) {
+    currentUser = user;
     localStorage.setItem('tm_auth','1');
+    localStorage.setItem('tm_currentUser', JSON.stringify(user));
     document.getElementById('loginWrap').style.display='none';
     document.getElementById('appWrap').style.display='flex';
     startApp();
@@ -466,6 +510,8 @@ function doLogin() {
 function doLogout() {
   if(!confirm('Yakin mau keluar?')) return;
   localStorage.removeItem('tm_auth');
+  localStorage.removeItem('tm_currentUser');
+  currentUser = null;
   document.getElementById('appWrap').style.display='none';
   document.getElementById('loginWrap').style.display='flex';
   document.getElementById('inUser').value='';
@@ -475,17 +521,61 @@ function doLogout() {
 
 function checkAuth() {
   if(localStorage.getItem('tm_auth')==='1') {
+    var savedUser = localStorage.getItem('tm_currentUser');
+    if(savedUser) {
+      try {
+        currentUser = JSON.parse(savedUser);
+      } catch(e) {}
+    }
     document.getElementById('loginWrap').style.display='none';
     document.getElementById('appWrap').style.display='flex';
     startApp();
   }
 }
 
+// ══ RENDER TABS BERDASARKAN ROLE ═══════════════════
+function renderTabsByRole() {
+  var tabsContainer = document.getElementById('tabsContainer');
+  if(!tabsContainer) return;
+  
+  var tabsHtml = `
+    <div class="tab" id="tab-kasir" onclick="goTab('kasir')"><span class="tab-icon">🧾</span>Kasir</div>
+    <div class="tab" id="tab-history" onclick="goTab('history')"><span class="tab-icon">📋</span>History</div>
+  `;
+  
+  if(currentUser && currentUser.role === 'admin') {
+    tabsHtml += `
+      <div class="tab" id="tab-rekap" onclick="goTab('rekap')"><span class="tab-icon">📊</span>Rekap</div>
+      <div class="tab" id="tab-stok" onclick="goTab('stok')"><span class="tab-icon">📦</span>Stok</div>
+      <div class="tab" id="tab-menu" onclick="goTab('menu')"><span class="tab-icon">🍽️</span>Menu</div>
+      <div class="tab" id="tab-akun" onclick="goTab('akun')"><span class="tab-icon">👥</span>Kelola Akun</div>
+    `;
+  }
+  
+  tabsContainer.innerHTML = tabsHtml;
+  
+  // Aktifkan tab pertama
+  var firstTab = tabsContainer.querySelector('.tab');
+  if(firstTab) {
+    var tabName = firstTab.id.replace('tab-','');
+    goTab(tabName);
+  }
+}
+
 // ══ APP START ════════════════════════════════════
 function startApp() {
+  var savedUser = localStorage.getItem('tm_currentUser');
+  if(savedUser) {
+    try {
+      currentUser = JSON.parse(savedUser);
+    } catch(e) {}
+  }
+  
   cleanOldData();
+  renderTabsByRole();
   renderMenuGrid();
   renderManageList();
+  if(currentUser && currentUser.role === 'admin') renderAkunList();
   updateCartBar();
   loadCloud();
 }
@@ -494,12 +584,16 @@ function startApp() {
 function goTab(name) {
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
-  document.getElementById('page-'+name).classList.add('active');
-  document.getElementById('tab-'+name).classList.add('active');
-  if(name==='rekap') renderRekap();
-  if(name==='stok') renderStok();
+  var pageEl = document.getElementById('page-'+name);
+  if(pageEl) pageEl.classList.add('active');
+  var tabEl = document.getElementById('tab-'+name);
+  if(tabEl) tabEl.classList.add('active');
+  
+  if(name==='rekap' && currentUser?.role==='admin') renderRekap();
+  if(name==='stok' && currentUser?.role==='admin') renderStok();
   if(name==='history') renderHistory();
-  if(name==='menu') renderManageList();
+  if(name==='menu' && currentUser?.role==='admin') renderManageList();
+  if(name==='akun' && currentUser?.role==='admin') renderAkunList();
 }
 
 // ══ MENU GRID ════════════════════════════════════
@@ -860,6 +954,130 @@ function delMenu(id){
   menus=menus.filter(function(x){return x.id!==id;});
   cart=cart.filter(function(x){return x.id!==id;});
   save();syncMenu();updateCartBar();renderMenuGrid();renderManageList();
+}
+
+// ══ KELOLA AKUN ══════════════════════════════════
+function renderAkunList() {
+  var container = document.getElementById('akunList');
+  if(!container) return;
+  
+  if(akun.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="ei">👥</div><p>Belum ada akun</p></div>';
+    return;
+  }
+  
+  container.innerHTML = '<div class="sl-hdr">👥 Semua Akun <span style="font-size:11px;color:#9CA3AF;font-weight:600;">'+akun.length+' akun</span></div>' +
+    akun.map(function(a) {
+      var roleIcon = a.role === 'admin' ? '👑' : '👤';
+      var roleText = a.role === 'admin' ? 'Admin (Akses Penuh)' : 'Kasir (Kasir & History)';
+      var isCurrentUser = currentUser && currentUser.id === a.id;
+      return '<div class="si">' +
+        '<div class="si-emoji">'+roleIcon+'</div>' +
+        '<div class="si-info">' +
+          '<div class="si-name">'+escapeHtml(a.nama)+'</div>' +
+          '<div class="si-min">@'+escapeHtml(a.username)+'</div>' +
+          '<div class="si-min" style="color:#C8102E;">'+roleText+'</div>' +
+        '</div>' +
+        '<div class="si-actions">' +
+          (isCurrentUser ? '<div style="font-size:10px;background:#DCFCE7;padding:4px 8px;border-radius:8px;">Aktif</div>' : '') +
+          '<button class="mi-btn ed" onclick="openAkunForm('+a.id+')" style="background:#FEF3C7;">✏️</button>' +
+          (a.id !== currentUser?.id ? '<button class="mi-btn dl" onclick="delAkun('+a.id+')" style="background:#FEE2E2;">🗑️</button>' : '') +
+        '</div>' +
+      '</div>';
+    }).join('');
+}
+
+function escapeHtml(str) {
+  if(!str) return '';
+  return str.replace(/[&<>]/g, function(m) {
+    if(m === '&') return '&amp;';
+    if(m === '<') return '&lt;';
+    if(m === '>') return '&gt;';
+    return m;
+  });
+}
+
+var editAkunId = null;
+
+function openAkunForm(id) {
+  editAkunId = id;
+  var a = id ? akun.find(function(x){ return x.id === id; }) : null;
+  document.getElementById('akunFormTitle').textContent = a ? '✏️ Edit Akun' : '👤 Tambah Akun';
+  document.getElementById('akunNama').value = a ? a.nama : '';
+  document.getElementById('akunUsername').value = a ? a.username : '';
+  document.getElementById('akunPassword').value = '';
+  document.getElementById('akunRole').value = a ? a.role : 'kasir';
+  if(a) document.getElementById('akunPassword').placeholder = 'Kosongkan jika tidak diubah';
+  openOv('ovAkun');
+}
+
+function saveAkun() {
+  var nama = document.getElementById('akunNama').value.trim();
+  var username = document.getElementById('akunUsername').value.trim().toLowerCase();
+  var password = document.getElementById('akunPassword').value;
+  var role = document.getElementById('akunRole').value;
+  
+  if(!nama || !username) {
+    alert('Nama dan Username harus diisi!');
+    return;
+  }
+  
+  // Cek username duplikat
+  var existing = akun.find(function(a) { 
+    return a.username === username && (editAkunId ? a.id !== editAkunId : true);
+  });
+  if(existing) {
+    alert('Username "'+username+'" sudah dipakai!');
+    return;
+  }
+  
+  if(editAkunId) {
+    for(var i=0; i<akun.length; i++) {
+      if(akun[i].id === editAkunId) {
+        akun[i].nama = nama;
+        akun[i].username = username;
+        akun[i].role = role;
+        if(password) akun[i].password = password;
+        break;
+      }
+    }
+    // Update currentUser jika sedang login
+    if(currentUser && currentUser.id === editAkunId) {
+      currentUser.nama = nama;
+      currentUser.username = username;
+      currentUser.role = role;
+      if(password) currentUser.password = password;
+      localStorage.setItem('tm_currentUser', JSON.stringify(currentUser));
+    }
+  } else {
+    var newId = Date.now();
+    akun.push({
+      id: newId,
+      nama: nama,
+      username: username,
+      password: password || '123456',
+      role: role
+    });
+  }
+  
+  localStorage.setItem('tm_akun', JSON.stringify(akun));
+  renderAkunList();
+  renderTabsByRole();
+  closeOvForce('ovAkun');
+  if(navigator.vibrate) navigator.vibrate(30);
+}
+
+function delAkun(id) {
+  var a = akun.find(function(x){ return x.id === id; });
+  if(!a) return;
+  if(akun.length <= 1) {
+    alert('Minimal harus ada 1 akun!');
+    return;
+  }
+  if(!confirm('Hapus akun "'+a.nama+'"?')) return;
+  akun = akun.filter(function(x){ return x.id !== id; });
+  localStorage.setItem('tm_akun', JSON.stringify(akun));
+  renderAkunList();
 }
 
 // ══ OVERLAY ══════════════════════════════════════
