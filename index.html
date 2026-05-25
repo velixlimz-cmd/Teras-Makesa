@@ -691,16 +691,15 @@
     <h2>🔐 Masuk Dulu Ya!</h2>
     <div class="login-field">
       <label>Username</label>
-      <input type="text" id="loginUser" placeholder="admin" autocomplete="username">
+      <input type="text" id="loginUser" placeholder="Username" autocomplete="off" inputmode="text">
     </div>
     <div class="login-field">
       <label>Password</label>
-      <input type="password" id="loginPass" placeholder="••••••" autocomplete="current-password"
-        onkeydown="if(event.key==='Enter') doLogin()">
+      <input type="password" id="loginPass" placeholder="••••••" autocomplete="off"
+        onkeyup="if(event.key==='Enter') doLogin()">
     </div>
     <div class="login-error" id="loginError">❌ Username atau password salah!</div>
-    <button class="btn-login" onclick="doLogin()">Masuk →</button>
-    <div class="login-hint">user: admin &nbsp;|&nbsp; pass: admin</div>
+    <button class="btn-login" type="button" onclick="doLogin()">Masuk →</button>
   </div>
 </div>
 
@@ -1677,17 +1676,24 @@ function checkLogin() {
 }
 
 function doLogin() {
-  var user = (document.getElementById('loginUser').value || '').trim();
-  var pass = document.getElementById('loginPass').value || '';
-  var errEl = document.getElementById('loginError');
+  var userEl = document.getElementById('loginUser');
+  var passEl = document.getElementById('loginPass');
+  var errEl  = document.getElementById('loginError');
+  var user   = userEl ? userEl.value.trim().toLowerCase() : '';
+  var pass   = passEl ? passEl.value : '';
+  console.log('Login attempt:', user, pass.length + ' chars');
   if (user === 'admin' && pass === 'admin') {
     localStorage.setItem('kasirLoggedIn', '1');
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('logoutBtn').style.display = 'flex';
+    var ls = document.getElementById('loginScreen');
+    var lb = document.getElementById('logoutBtn');
+    if (ls) { ls.style.display = 'none'; ls.style.visibility = 'hidden'; ls.style.pointerEvents = 'none'; }
+    if (lb) lb.style.display = 'flex';
     if (errEl) errEl.style.display = 'none';
+    console.log('Login OK!');
   } else {
     if (errEl) errEl.style.display = 'block';
-    document.getElementById('loginPass').value = '';
+    if (passEl) passEl.value = '';
+    console.log('Login FAILED');
   }
 }
 
