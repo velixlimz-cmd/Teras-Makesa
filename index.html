@@ -1022,7 +1022,6 @@ let isSyncing = false;
 
 // ── INIT ───────────────────────────────────────────
 function init() {
-  setupLogin();
   checkLogin();
   updateHeaderDate();
   setInterval(updateHeaderDate, 60000);
@@ -1686,30 +1685,30 @@ function doLogout() {
   document.getElementById('inPass').value = '';
 }
 
+function prosesLogin() {
+  var u = (document.getElementById('inUser').value || '').trim().toLowerCase();
+  var p = (document.getElementById('inPass').value || '');
+  var err = document.getElementById('loginErr');
+  if (u === 'admin' && p === 'admin') {
+    localStorage.setItem('kasirLoggedIn', '1');
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('logoutBtn').style.display = 'flex';
+    if (err) err.style.display = 'none';
+  } else {
+    if (err) err.style.display = 'block';
+    document.getElementById('inPass').value = '';
+  }
+}
+
 function setupLogin() {
+  // Dipanggil setelah DOM ready
   var btn = document.getElementById('btnMasuk');
   var passInput = document.getElementById('inPass');
-  if (btn) {
-    btn.addEventListener('click', function() {
-      var u = (document.getElementById('inUser').value || '').trim().toLowerCase();
-      var p = document.getElementById('inPass').value || '';
-      var err = document.getElementById('loginErr');
-      if (u === 'admin' && p === 'admin') {
-        localStorage.setItem('kasirLoggedIn', '1');
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('logoutBtn').style.display = 'flex';
-        if (err) err.style.display = 'none';
-      } else {
-        if (err) err.style.display = 'block';
-        document.getElementById('inPass').value = '';
-      }
-    });
-  }
-  if (passInput) {
-    passInput.addEventListener('keyup', function(e) {
-      if (e.key === 'Enter') document.getElementById('btnMasuk').click();
-    });
-  }
+  var userInput = document.getElementById('inUser');
+  if (btn) btn.addEventListener('click', prosesLogin);
+  if (btn) btn.addEventListener('touchend', function(e){ e.preventDefault(); prosesLogin(); });
+  if (passInput) passInput.addEventListener('keyup', function(e){ if(e.key==='Enter') prosesLogin(); });
+  if (userInput) userInput.addEventListener('keyup', function(e){ if(e.key==='Enter') prosesLogin(); });
 }
 
 // ── AUTO DELETE DATA > 7 HARI ───────────────────────
@@ -1823,7 +1822,10 @@ function vibrate(pattern = [30]) {
 }
 
 // ── START ──────────────────────────────────────────
-init();
+document.addEventListener("DOMContentLoaded", function() {
+  setupLogin();
+  init();
+});
 </script>
 
 <!-- OVERLAY: TAMBAH STOK -->
