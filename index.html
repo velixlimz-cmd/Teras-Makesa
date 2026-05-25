@@ -680,6 +680,35 @@
 </style>
 </head>
 <body>
+<script>
+function prosesLogin() {
+  var u = (document.getElementById('inUser').value||'').trim().toLowerCase();
+  var p = (document.getElementById('inPass').value||'');
+  var err = document.getElementById('loginErr');
+  if (u==='admin' && p==='admin') {
+    localStorage.setItem('kasirLoggedIn','1');
+    document.getElementById('loginScreen').style.display='none';
+    var lb=document.getElementById('logoutBtn');
+    if(lb) lb.style.display='flex';
+    if(err) err.style.display='none';
+  } else {
+    if(err) err.style.display='block';
+    document.getElementById('inPass').value='';
+  }
+}
+function doLogout() {
+  if(!confirm('Yakin mau keluar?')) return;
+  localStorage.removeItem('kasirLoggedIn');
+  document.getElementById('loginScreen').style.display='flex';
+  var lb=document.getElementById('logoutBtn');
+  if(lb) lb.style.display='none';
+  var u=document.getElementById('inUser');
+  var p=document.getElementById('inPass');
+  if(u) u.value='';
+  if(p) p.value='';
+}
+</script>
+
 
 
 <!-- LOGIN SCREEN -->
@@ -701,7 +730,9 @@
     </div>
     <div id="loginErr" style="display:none;color:#C8102E;font-size:12px;font-weight:700;text-align:center;margin-bottom:10px;">❌ Username atau password salah!</div>
     <button id="btnMasuk" type="button"
-      style="width:100%;padding:15px;background:linear-gradient(135deg,#9B0B22,#C8102E);color:white;border:none;border-radius:14px;font-size:16px;font-weight:900;font-family:Nunito,sans-serif;cursor:pointer;">
+      onclick="prosesLogin()"
+      ontouchend="event.preventDefault();prosesLogin();"
+      style="width:100%;padding:15px;background:linear-gradient(135deg,#9B0B22,#C8102E);color:white;border:none;border-radius:14px;font-size:16px;font-weight:900;font-family:Nunito,sans-serif;cursor:pointer;-webkit-tap-highlight-color:transparent;">
       Masuk →
     </button>
   </div>
@@ -1822,10 +1853,7 @@ function vibrate(pattern = [30]) {
 }
 
 // ── START ──────────────────────────────────────────
-document.addEventListener("DOMContentLoaded", function() {
-  setupLogin();
-  init();
-});
+init();
 </script>
 
 <!-- OVERLAY: TAMBAH STOK -->
