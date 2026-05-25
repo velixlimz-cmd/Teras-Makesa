@@ -146,6 +146,8 @@ body{font-family:'Nunito',sans-serif;background:#FFF8F0;color:#1A0A0E;min-height
 .empty-state{text-align:center;padding:32px 16px;color:#9CA3AF;}
 .empty-state .ei{font-size:44px;margin-bottom:8px;}
 .empty-state p{font-size:13px;font-weight:600;}
+.hapus-transaksi-btn{background:#FEE2E2;color:#C8102E;border:none;padding:4px 10px;border-radius:8px;margin-top:4px;font-size:10px;font-weight:800;cursor:pointer;width:100%;}
+.hapus-transaksi-btn:hover{background:#FFCCCC;}
 
 /* STOK */
 .stok-page{padding:14px;display:flex;flex-direction:column;gap:12px;}
@@ -562,6 +564,27 @@ function renderTabsByRole() {
   }
 }
 
+function goTab(name) {
+  var adminOnlyPages = ['rekap', 'stok', 'menu', 'akun'];
+  if(adminOnlyPages.includes(name) && (!currentUser || currentUser.role !== 'admin')) {
+    alert('⚠️ Halaman ini hanya untuk Admin!');
+    return;
+  }
+  
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  var pageEl = document.getElementById('page-'+name);
+  if(pageEl) pageEl.classList.add('active');
+  var tabEl = document.getElementById('tab-'+name);
+  if(tabEl) tabEl.classList.add('active');
+  
+  if(name==='rekap' && currentUser?.role==='admin') renderRekap();
+  if(name==='stok' && currentUser?.role==='admin') renderStok();
+  if(name==='history') renderHistory();
+  if(name==='menu' && currentUser?.role==='admin') renderManageList();
+  if(name==='akun' && currentUser?.role==='admin') renderAkunList();
+}
+
 // ══ APP START ════════════════════════════════════
 function startApp() {
   var savedUser = localStorage.getItem('tm_currentUser');
@@ -578,22 +601,6 @@ function startApp() {
   if(currentUser && currentUser.role === 'admin') renderAkunList();
   updateCartBar();
   loadCloud();
-}
-
-// ══ TABS ═════════════════════════════════════════
-function goTab(name) {
-  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
-  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
-  var pageEl = document.getElementById('page-'+name);
-  if(pageEl) pageEl.classList.add('active');
-  var tabEl = document.getElementById('tab-'+name);
-  if(tabEl) tabEl.classList.add('active');
-  
-  if(name==='rekap' && currentUser?.role==='admin') renderRekap();
-  if(name==='stok' && currentUser?.role==='admin') renderStok();
-  if(name==='history') renderHistory();
-  if(name==='menu' && currentUser?.role==='admin') renderManageList();
-  if(name==='akun' && currentUser?.role==='admin') renderAkunList();
 }
 
 // ══ MENU GRID ════════════════════════════════════
@@ -621,7 +628,6 @@ function renderMenuGrid() {
   }).join('');
 }
 
-// ══ CART ═════════════════════════════════════════
 function adjCart(id, delta) {
   var idx=-1;
   for(var i=0;i<cart.length;i++) if(cart[i].id===id){idx=i;break;}
@@ -751,7 +757,7 @@ function selesai(){
   document.getElementById('successScr').classList.remove('show');
 }
 
-// ══ REKAP ════════════════════════════════════════
+// ══ REKAP (DENGAN TOMBOL HAPUS UNTUK ADMIN) ════════════════════════
 function renderRekap() {
   var today=new Date().toDateString();
   var td=trxs.filter(function(t){return new Date(t.id).toDateString()===today;});
@@ -772,13 +778,19 @@ function renderRekap() {
   var ml={cash:'💵',qris:'📱',transfer:'🏦',gopay:'🟢'};
   var mc={cash:'background:#DCFCE7;color:#16A34A',qris:'background:#FEE2E2;color:#C8102E',transfer:'background:#FEF3C7;color:#D97706',gopay:'background:#DCFCE7;color:#16A34A'};
   var mn={cash:'Tunai',qris:'QRIS',transfer:'Transfer',gopay:'GoPay/OVO'};
+  
+  var isAdmin = currentUser && currentUser.role === 'admin';
+  
   document.getElementById('rTrxList').innerHTML=td.map(function(t){
     var prev=t.items.map(function(x){return x.emoji+'x'+x.qty;}).join(' ');
+    var hapusButton = isAdmin ? '<button class="hapus-transaksi-btn" onclick="hapusTransaksi('+t.id+')">🗑️ Hapus</button>' : '';
     return '<div class="trx-item">'+
       '<div class="ti-icon" style="background:#FEE2E2;">'+(ml[t.method]||'💳')+'</div>'+
       '<div class="ti-info"><div class="ti-num">'+t.num+' · '+t.time+'</div><div class="ti-items">'+prev+'</div></div>'+
       '<div class="ti-right"><div class="ti-amt">Rp '+t.total.toLocaleString('id')+'</div>'+
-      '<span class="ti-badge" style="'+(mc[t.method]||mc.cash)+'">'+(mn[t.method]||t.method)+'</span></div></div>';
+      '<span class="ti-badge" style="'+(mc[t.method]||mc.cash)+'">'+(mn[t.method]||t.method)+'</span>'+
+      hapusButton +
+      '</div></div>';
   }).join('');
 }
 
@@ -859,7 +871,7 @@ function simpanStok(){
   if(navigator.vibrate) navigator.vibrate([30,30,80]);
 }
 
-// ══ HISTORY ══════════════════════════════════════
+// ══ HISTORY (DENGAN TOMBOL HAPUS UNTUK ADMIN) ════════════════════════
 function setHistFilter(f,btn){
   histFilter=f;
   document.querySelectorAll('.hf-btn').forEach(function(b){b.classList.remove('active');});
@@ -884,19 +896,24 @@ function renderHistory(){
   var ml={cash:'💵',qris:'📱',transfer:'🏦',gopay:'🟢'};
   var mn={cash:'Tunai',qris:'QRIS',transfer:'Transfer',gopay:'GoPay/OVO'};
   var mc={cash:'background:#DCFCE7;color:#16A34A',qris:'background:#FEE2E2;color:#C8102E',transfer:'background:#FEF3C7;color:#D97706',gopay:'background:#DCFCE7;color:#16A34A'};
+  
+  var isAdmin = currentUser && currentUser.role === 'admin';
+  
   document.getElementById('histList').innerHTML=
     '<div class="hl-hdr">📋 Riwayat <span style="font-size:11px;color:#9CA3AF;font-weight:600;">'+ft.length+' transaksi</span></div>'+
     ft.map(function(t,i){
       var prev=t.items.map(function(x){return x.emoji+' '+x.name+' x'+x.qty;}).join(', ');
       var det=t.items.map(function(x){return '<div class="hi-det-row"><span>'+x.emoji+' '+x.name+' x'+x.qty+'</span><span>Rp '+(x.price*x.qty).toLocaleString('id')+'</span></div>';}).join('');
       if(t.method==='cash'&&t.change>0) det+='<div style="font-size:10px;color:#16A34A;font-weight:700;margin-top:4px;">Kembalian: Rp '+t.change.toLocaleString('id')+'</div>';
+      var hapusButton = isAdmin ? '<button class="hapus-transaksi-btn" onclick="hapusTransaksi('+t.id+')">🗑️ Hapus</button>' : '';
       return '<div class="hi">'+
         '<div class="hi-top" onclick="togDet(\'hd'+i+'\')">'+
           '<div class="hi-icon '+(t.method||'cash')+'">'+(ml[t.method]||'💳')+'</div>'+
           '<div class="hi-info"><div class="hi-num">'+t.num+' · '+t.time+'</div><div class="hi-prev">'+prev+'</div></div>'+
           '<div class="hi-right"><div class="hi-amt">Rp '+t.total.toLocaleString('id')+'</div>'+
-          '<span class="hi-mth" style="'+(mc[t.method]||mc.cash)+'">'+(mn[t.method]||t.method)+'</span></div>'+
-        '</div>'+
+          '<span class="hi-mth" style="'+(mc[t.method]||mc.cash)+'">'+(mn[t.method]||t.method)+'</span>'+
+          hapusButton +
+          '</div></div>'+
         '<div class="hi-det" id="hd'+i+'">'+det+
           '<div class="hi-det-total"><span>Total</span><span>Rp '+t.total.toLocaleString('id')+'</span></div>'+
         '</div></div>';
@@ -904,6 +921,89 @@ function renderHistory(){
 }
 
 function togDet(id){var el=document.getElementById(id);if(el)el.classList.toggle('open');}
+
+// ══ FUNGSI HAPUS TRANSAKSI (HANYA UNTUK ADMIN) ═══════════════════════
+function hapusTransaksi(trxId) {
+  // Cek apakah user adalah admin
+  if(!currentUser || currentUser.role !== 'admin') {
+    alert('⚠️ Hanya Admin yang bisa menghapus transaksi!');
+    return;
+  }
+  
+  // Cari transaksi yang akan dihapus
+  var trxToDelete = null;
+  for(var i=0; i<trxs.length; i++) {
+    if(trxs[i].id === trxId) {
+      trxToDelete = trxs[i];
+      break;
+    }
+  }
+  
+  if(!trxToDelete) {
+    alert('Transaksi tidak ditemukan!');
+    return;
+  }
+  
+  // Konfirmasi hapus
+  var confirmMsg = 'Hapus transaksi ' + trxToDelete.num + '?\n';
+  confirmMsg += 'Total: Rp ' + trxToDelete.total.toLocaleString('id') + '\n';
+  confirmMsg += 'Waktu: ' + trxToDelete.time + '\n\n';
+  confirmMsg += '⚠️ Stok akan dikembalikan ke jumlah semula!';
+  
+  if(!confirm(confirmMsg)) return;
+  
+  // Kembalikan stok
+  for(var i=0; i<trxToDelete.items.length; i++) {
+    var item = trxToDelete.items[i];
+    var menuId = null;
+    
+    // Cari menu ID berdasarkan nama
+    for(var j=0; j<menus.length; j++) {
+      if(menus[j].name === item.name) {
+        menuId = menus[j].id;
+        break;
+      }
+    }
+    
+    if(menuId) {
+      var s = stok[menuId] || {qty: 0, min: 5};
+      stok[menuId] = {qty: s.qty + item.qty, min: s.min};
+    }
+  }
+  
+  // Hapus transaksi dari array
+  var newTrxs = [];
+  for(var i=0; i<trxs.length; i++) {
+    if(trxs[i].id !== trxId) {
+      newTrxs.push(trxs[i]);
+    }
+  }
+  trxs = newTrxs;
+  
+  // Simpan ke localStorage
+  save();
+  
+  // Sync ke Google Sheets
+  syncHapusTransaksi(trxId);
+  
+  // Refresh tampilan
+  renderRekap();
+  renderHistory();
+  renderStok();
+  
+  alert('✅ Transaksi berhasil dihapus!\nStok sudah dikembalikan.');
+}
+
+function syncHapusTransaksi(trxId) {
+  try {
+    fetch(GS, {
+      method: 'POST', 
+      body: JSON.stringify({action: 'deleteTrx', id: trxId})
+    });
+  } catch(e) {
+    console.log('Gagal sync hapus transaksi');
+  }
+}
 
 // ══ MENU MANAGE ══════════════════════════════════
 function renderManageList(){
