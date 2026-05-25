@@ -691,6 +691,8 @@ function prosesLogin() {
     var lb=document.getElementById('logoutBtn');
     if(lb) lb.style.display='flex';
     if(err) err.style.display='none';
+    // Panggil init setelah login berhasil
+    if(typeof init === 'function') init();
   } else {
     if(err) err.style.display='block';
     document.getElementById('inPass').value='';
@@ -1053,10 +1055,13 @@ let isSyncing = false;
 
 // ── INIT ───────────────────────────────────────────
 function init() {
-  checkLogin();
+  var loggedIn = checkLogin();
+  if (!loggedIn) return; // stop di sini kalau belum login
   updateHeaderDate();
   setInterval(updateHeaderDate, 60000);
   autoCleanOldData();
+  renderMenuGrid();
+  renderManageList();
   showSyncStatus('loading', '🔄 Menghubungkan ke server...');
   loadFromCloud();
 }
@@ -1699,11 +1704,15 @@ function deleteMenu(id) {
 // ── AUTH ────────────────────────────────────────────
 function checkLogin() {
   var ls = document.getElementById('loginScreen');
+  var lb = document.getElementById('logoutBtn');
   if (localStorage.getItem('kasirLoggedIn') === '1') {
     if (ls) ls.style.display = 'none';
-    document.getElementById('logoutBtn').style.display = 'flex';
+    if (lb) lb.style.display = 'flex';
+    return true; // sudah login
   } else {
     if (ls) ls.style.display = 'flex';
+    if (lb) lb.style.display = 'none';
+    return false; // belum login
   }
 }
 
