@@ -1668,34 +1668,33 @@ function deleteMenu(id) {
 const USERS = { admin: 'admin' };
 
 function checkLogin() {
-  const loggedIn = sessionStorage.getItem('kasirLoggedIn');
-  if (loggedIn === '1') {
-    document.getElementById('loginScreen').classList.add('hidden');
+  if (localStorage.getItem('kasirLoggedIn') === '1') {
+    document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('logoutBtn').style.display = 'flex';
+  } else {
+    document.getElementById('loginScreen').style.display = 'flex';
   }
 }
 
 function doLogin() {
-  const user = document.getElementById('loginUser').value.trim();
-  const pass = document.getElementById('loginPass').value;
-  const errEl = document.getElementById('loginError');
-  if (USERS[user] && USERS[user] === pass) {
-    sessionStorage.setItem('kasirLoggedIn', '1');
-    document.getElementById('loginScreen').classList.add('hidden');
+  var user = (document.getElementById('loginUser').value || '').trim();
+  var pass = document.getElementById('loginPass').value || '';
+  var errEl = document.getElementById('loginError');
+  if (user === 'admin' && pass === 'admin') {
+    localStorage.setItem('kasirLoggedIn', '1');
+    document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('logoutBtn').style.display = 'flex';
-    errEl.style.display = 'none';
-    vibrate([50, 50, 100]);
+    if (errEl) errEl.style.display = 'none';
   } else {
-    errEl.style.display = 'block';
+    if (errEl) errEl.style.display = 'block';
     document.getElementById('loginPass').value = '';
-    vibrate([100, 50, 100]);
   }
 }
 
 function doLogout() {
   if (!confirm('Yakin mau keluar?')) return;
-  sessionStorage.removeItem('kasirLoggedIn');
-  document.getElementById('loginScreen').classList.remove('hidden');
+  localStorage.removeItem('kasirLoggedIn');
+  document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('logoutBtn').style.display = 'none';
   document.getElementById('loginUser').value = '';
   document.getElementById('loginPass').value = '';
