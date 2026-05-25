@@ -239,6 +239,10 @@ body{font-family:'Nunito',sans-serif;background:#FFF8F0;color:#1A0A0E;min-height
 
 /* KELOLA AKUN */
 .si-actions{display:flex;gap:6px;flex-shrink:0;}
+
+/* Tombol Hapus Transaksi */
+.hapus-transaksi-btn{background:#FEE2E2;color:#C8102E;border:none;padding:4px 10px;border-radius:8px;margin-top:4px;font-size:10px;font-weight:800;cursor:pointer;width:100%;}
+.hapus-transaksi-btn:hover{background:#FFCCCC;}
 </style>
 </head>
 <body>
@@ -308,7 +312,6 @@ body{font-family:'Nunito',sans-serif;background:#FFF8F0;color:#1A0A0E;min-height
         <div class="stat-box"><div class="sb-icon">📱</div><div class="sb-val" id="rDigit">Rp 0</div><div class="sb-label">QRIS/Transfer</div></div>
       </div>
       <div class="trx-list"><div class="trx-list-hdr">Transaksi Hari Ini <span id="rTrxCount" style="font-size:11px;color:#9CA3AF;font-weight:600;"></span></div><div id="rTrxList"></div></div>
-      <button onclick="resetHarian()" style="background:none;border:2px solid #F3E8EA;border-radius:12px;padding:12px;font-family:Nunito,sans-serif;font-size:12px;font-weight:800;color:#9CA3AF;cursor:pointer;width:100%;">🔄 Reset Data Hari Ini</button>
     </div>
   </div>
 
@@ -554,7 +557,6 @@ function renderTabsByRole() {
   
   tabsContainer.innerHTML = tabsHtml;
   
-  // Aktifkan tab pertama
   var firstTab = tabsContainer.querySelector('.tab');
   if(firstTab) {
     var tabName = firstTab.id.replace('tab-','');
@@ -772,21 +774,132 @@ function renderRekap() {
   var ml={cash:'💵',qris:'📱',transfer:'🏦',gopay:'🟢'};
   var mc={cash:'background:#DCFCE7;color:#16A34A',qris:'background:#FEE2E2;color:#C8102E',transfer:'background:#FEF3C7;color:#D97706',gopay:'background:#DCFCE7;color:#16A34A'};
   var mn={cash:'Tunai',qris:'QRIS',transfer:'Transfer',gopay:'GoPay/OVO'};
+  
   document.getElementById('rTrxList').innerHTML=td.map(function(t){
     var prev=t.items.map(function(x){return x.emoji+'x'+x.qty;}).join(' ');
     return '<div class="trx-item">'+
       '<div class="ti-icon" style="background:#FEE2E2;">'+(ml[t.method]||'💳')+'</div>'+
       '<div class="ti-info"><div class="ti-num">'+t.num+' · '+t.time+'</div><div class="ti-items">'+prev+'</div></div>'+
       '<div class="ti-right"><div class="ti-amt">Rp '+t.total.toLocaleString('id')+'</div>'+
-      '<span class="ti-badge" style="'+(mc[t.method]||mc.cash)+'">'+(mn[t.method]||t.method)+'</span></div></div>';
+      '<span class="ti-badge" style="'+(mc[t.method]||mc.cash)+'">'+(mn[t.method]||t.method)+'</span>'+
+      '<button class="hapus-transaksi-btn" onclick="hapusTransaksi('+t.id+')">🗑️ Hapus</button>'+
+      '</div></div>';
   }).join('');
 }
 
-function resetHarian(){
-  if(!confirm('Reset data hari ini?')) return;
-  var today=new Date().toDateString();
-  trxs=trxs.filter(function(t){return new Date(t.id).toDateString()!==today;});
-  save();renderRekap();
+// ══ HISTORY ══════════════════════════════════════
+function setHistFilter(f,btn){
+  histFilter=f;
+  document.querySelectorAll('.hf-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  renderHistory();
+}
+
+function renderHistory(){
+  var now=new Date();
+  var ft=trxs.filter(function(t){
+    var d=new Date(t.id);
+    if(histFilter==='hari') return d.toDateString()===now.toDateString();
+    if(histFilter==='minggu') return (now-d)/(1000*60*60*24)<=7;
+    return true;
+  });
+  var omset=0,items=0;
+  for(var i=0;i<ft.length;i++){omset+=ft[i].total;for(var j=0;j<ft[i].items.length;j++)items+=ft[i].items[j].qty;}
+  document.getElementById('histSum').innerHTML=
+    '<div class="hs-box"><div class="hs-icon">💰</div><div><div class="hs-val">Rp '+omset.toLocaleString('id')+'</div><div class="hs-label">Total Omset</div></div></div>'+
+    '<div class="hs-box"><div class="hs-icon">🧾</div><div><div class="hs-val">'+ft.length+' trx</div><div class="hs-label">'+items+' item terjual</div></div></div>';
+  if(ft.length===0){document.getElementById('histList').innerHTML='<div class="empty-state"><div class="ei">📋</div><p>Belum ada data</p></div>';return;}
+  var ml={cash:'💵',qris:'📱',transfer:'🏦',gopay:'🟢'};
+  var mn={cash:'Tunai',qris:'QRIS',transfer:'Transfer',gopay:'GoPay/OVO'};
+  var mc={cash:'background:#DCFCE7;color:#16A34A',qris:'background:#FEE2E2;color:#C8102E',transfer:'background:#FEF3C7;color:#D97706',gopay:'background:#DCFCE7;color:#16A34A'};
+  document.getElementById('histList').innerHTML=
+    '<div class="hl-hdr">📋 Riwayat <span style="font-size:11px;color:#9CA3AF;font-weight:600;">'+ft.length+' transaksi</span></div>'+
+    ft.map(function(t,i){
+      var prev=t.items.map(function(x){return x.emoji+' '+x.name+' x'+x.qty;}).join(', ');
+      var det=t.items.map(function(x){return '<div class="hi-det-row"><span>'+x.emoji+' '+x.name+' x'+x.qty+'</span><span>Rp '+(x.price*x.qty).toLocaleString('id')+'</span></div>';}).join('');
+      if(t.method==='cash'&&t.change>0) det+='<div style="font-size:10px;color:#16A34A;font-weight:700;margin-top:4px;">Kembalian: Rp '+t.change.toLocaleString('id')+'</div>';
+      return '<div class="hi">'+
+        '<div class="hi-top" onclick="togDet(\'hd'+i+'\')">'+
+          '<div class="hi-icon '+(t.method||'cash')+'">'+(ml[t.method]||'💳')+'</div>'+
+          '<div class="hi-info"><div class="hi-num">'+t.num+' · '+t.time+'</div><div class="hi-prev">'+prev+'</div></div>'+
+          '<div class="hi-right"><div class="hi-amt">Rp '+t.total.toLocaleString('id')+'</div>'+
+          '<span class="hi-mth" style="'+(mc[t.method]||mc.cash)+'">'+(mn[t.method]||t.method)+'</span>'+
+          '<button class="hapus-transaksi-btn" onclick="hapusTransaksi('+t.id+')">🗑️ Hapus</button>'+
+          '</div></div>'+
+        '<div class="hi-det" id="hd'+i+'">'+det+
+          '<div class="hi-det-total"><span>Total</span><span>Rp '+t.total.toLocaleString('id')+'</span></div>'+
+        '</div></div>';
+    }).join('');
+}
+
+function togDet(id){var el=document.getElementById(id);if(el)el.classList.toggle('open');}
+
+// ══ FUNGSI HAPUS TRANSAKSI ═════════════════════════
+function hapusTransaksi(trxId) {
+  var trxToDelete = null;
+  for(var i=0; i<trxs.length; i++) {
+    if(trxs[i].id === trxId) {
+      trxToDelete = trxs[i];
+      break;
+    }
+  }
+  
+  if(!trxToDelete) {
+    alert('Transaksi tidak ditemukan!');
+    return;
+  }
+  
+  var confirmMsg = 'Hapus transaksi ' + trxToDelete.num + '?\n';
+  confirmMsg += 'Total: Rp ' + trxToDelete.total.toLocaleString('id') + '\n';
+  confirmMsg += 'Waktu: ' + trxToDelete.time + '\n\n';
+  confirmMsg += '⚠️ Stok akan dikembalikan ke jumlah semula!';
+  
+  if(!confirm(confirmMsg)) return;
+  
+  // Kembalikan stok
+  for(var i=0; i<trxToDelete.items.length; i++) {
+    var item = trxToDelete.items[i];
+    var menuId = null;
+    
+    for(var j=0; j<menus.length; j++) {
+      if(menus[j].name === item.name) {
+        menuId = menus[j].id;
+        break;
+      }
+    }
+    
+    if(menuId) {
+      var s = stok[menuId] || {qty: 0, min: 5};
+      stok[menuId] = {qty: s.qty + item.qty, min: s.min};
+    }
+  }
+  
+  // Hapus transaksi
+  var newTrxs = [];
+  for(var i=0; i<trxs.length; i++) {
+    if(trxs[i].id !== trxId) {
+      newTrxs.push(trxs[i]);
+    }
+  }
+  trxs = newTrxs;
+  
+  save();
+  syncHapusTransaksi(trxId);
+  
+  renderRekap();
+  renderHistory();
+  renderStok();
+  
+  alert('✅ Transaksi berhasil dihapus!\nStok sudah dikembalikan.');
+}
+
+function syncHapusTransaksi(trxId) {
+  try {
+    fetch(GS, {
+      method: 'POST', 
+      body: JSON.stringify({action: 'deleteTrx', id: trxId})
+    });
+  } catch(e) {}
 }
 
 // ══ STOK ═════════════════════════════════════════
@@ -858,52 +971,6 @@ function simpanStok(){
   save();syncStok();renderStok();renderMenuGrid();closeOvForce('ovStok');
   if(navigator.vibrate) navigator.vibrate([30,30,80]);
 }
-
-// ══ HISTORY ══════════════════════════════════════
-function setHistFilter(f,btn){
-  histFilter=f;
-  document.querySelectorAll('.hf-btn').forEach(function(b){b.classList.remove('active');});
-  btn.classList.add('active');
-  renderHistory();
-}
-
-function renderHistory(){
-  var now=new Date();
-  var ft=trxs.filter(function(t){
-    var d=new Date(t.id);
-    if(histFilter==='hari') return d.toDateString()===now.toDateString();
-    if(histFilter==='minggu') return (now-d)/(1000*60*60*24)<=7;
-    return true;
-  });
-  var omset=0,items=0;
-  for(var i=0;i<ft.length;i++){omset+=ft[i].total;for(var j=0;j<ft[i].items.length;j++)items+=ft[i].items[j].qty;}
-  document.getElementById('histSum').innerHTML=
-    '<div class="hs-box"><div class="hs-icon">💰</div><div><div class="hs-val">Rp '+omset.toLocaleString('id')+'</div><div class="hs-label">Total Omset</div></div></div>'+
-    '<div class="hs-box"><div class="hs-icon">🧾</div><div><div class="hs-val">'+ft.length+' trx</div><div class="hs-label">'+items+' item terjual</div></div></div>';
-  if(ft.length===0){document.getElementById('histList').innerHTML='<div class="empty-state"><div class="ei">📋</div><p>Belum ada data</p></div>';return;}
-  var ml={cash:'💵',qris:'📱',transfer:'🏦',gopay:'🟢'};
-  var mn={cash:'Tunai',qris:'QRIS',transfer:'Transfer',gopay:'GoPay/OVO'};
-  var mc={cash:'background:#DCFCE7;color:#16A34A',qris:'background:#FEE2E2;color:#C8102E',transfer:'background:#FEF3C7;color:#D97706',gopay:'background:#DCFCE7;color:#16A34A'};
-  document.getElementById('histList').innerHTML=
-    '<div class="hl-hdr">📋 Riwayat <span style="font-size:11px;color:#9CA3AF;font-weight:600;">'+ft.length+' transaksi</span></div>'+
-    ft.map(function(t,i){
-      var prev=t.items.map(function(x){return x.emoji+' '+x.name+' x'+x.qty;}).join(', ');
-      var det=t.items.map(function(x){return '<div class="hi-det-row"><span>'+x.emoji+' '+x.name+' x'+x.qty+'</span><span>Rp '+(x.price*x.qty).toLocaleString('id')+'</span></div>';}).join('');
-      if(t.method==='cash'&&t.change>0) det+='<div style="font-size:10px;color:#16A34A;font-weight:700;margin-top:4px;">Kembalian: Rp '+t.change.toLocaleString('id')+'</div>';
-      return '<div class="hi">'+
-        '<div class="hi-top" onclick="togDet(\'hd'+i+'\')">'+
-          '<div class="hi-icon '+(t.method||'cash')+'">'+(ml[t.method]||'💳')+'</div>'+
-          '<div class="hi-info"><div class="hi-num">'+t.num+' · '+t.time+'</div><div class="hi-prev">'+prev+'</div></div>'+
-          '<div class="hi-right"><div class="hi-amt">Rp '+t.total.toLocaleString('id')+'</div>'+
-          '<span class="hi-mth" style="'+(mc[t.method]||mc.cash)+'">'+(mn[t.method]||t.method)+'</span></div>'+
-        '</div>'+
-        '<div class="hi-det" id="hd'+i+'">'+det+
-          '<div class="hi-det-total"><span>Total</span><span>Rp '+t.total.toLocaleString('id')+'</span></div>'+
-        '</div></div>';
-    }).join('');
-}
-
-function togDet(id){var el=document.getElementById(id);if(el)el.classList.toggle('open');}
 
 // ══ MENU MANAGE ══════════════════════════════════
 function renderManageList(){
@@ -1022,7 +1089,6 @@ function saveAkun() {
     return;
   }
   
-  // Cek username duplikat
   var existing = akun.find(function(a) { 
     return a.username === username && (editAkunId ? a.id !== editAkunId : true);
   });
@@ -1041,7 +1107,6 @@ function saveAkun() {
         break;
       }
     }
-    // Update currentUser jika sedang login
     if(currentUser && currentUser.id === editAkunId) {
       currentUser.nama = nama;
       currentUser.username = username;
