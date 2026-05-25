@@ -534,6 +534,127 @@
   .sir-input { width: 76px; padding: 8px 10px; border: 2px solid var(--border); border-radius: 12px; font-size: 16px; font-weight: 900; font-family: Nunito, sans-serif; color: var(--text); text-align: center; outline: none; flex-shrink: 0; }
   .sir-input:focus { border-color: var(--red); }
 
+
+  /* ── LOGIN ── */
+  .login-screen {
+    position: fixed; inset: 0; z-index: 9999;
+    background: linear-gradient(135deg, var(--red-dark) 0%, var(--red) 60%, #FF8C5A 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 32px 28px;
+  }
+  .login-screen.hidden { display: none; }
+  .login-logo { font-size: 64px; margin-bottom: 8px; animation: bounce 1s ease; }
+  .login-title { font-family: 'Fredoka One', sans-serif; font-size: 32px; color: white; margin-bottom: 4px; }
+  .login-sub { font-size: 13px; color: rgba(255,255,255,0.8); margin-bottom: 36px; font-weight: 600; }
+  .login-card {
+    background: white; border-radius: 24px; padding: 28px 24px;
+    width: 100%; max-width: 360px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  }
+  .login-card h2 { font-size: 18px; font-weight: 900; margin-bottom: 20px; text-align: center; }
+  .login-field { margin-bottom: 14px; }
+  .login-field label { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px; }
+  .login-field input {
+    width: 100%; padding: 14px 16px;
+    border: 2px solid var(--border); border-radius: 14px;
+    font-size: 16px; font-weight: 700; font-family: 'Nunito', sans-serif;
+    color: var(--text); outline: none; background: #FAFAFA;
+  }
+  .login-field input:focus { border-color: var(--red); background: white; }
+  .login-error { color: var(--red); font-size: 12px; font-weight: 700; text-align: center; margin-bottom: 10px; display: none; }
+  .btn-login {
+    width: 100%; padding: 16px;
+    background: linear-gradient(135deg, var(--red-dark), var(--red));
+    color: white; border: none; border-radius: 16px;
+    font-size: 16px; font-weight: 900; cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    box-shadow: 0 4px 16px rgba(200,16,46,0.4);
+    margin-top: 4px;
+  }
+  .login-hint { font-size: 11px; color: var(--muted); text-align: center; margin-top: 14px; font-weight: 600; }
+
+  /* ── HISTORY PAGE ── */
+  .history-page { padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+  .history-filter {
+    display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px;
+  }
+  .hf-btn {
+    padding: 7px 16px; border-radius: 20px; white-space: nowrap;
+    border: none; font-size: 12px; font-weight: 800; cursor: pointer;
+    font-family: 'Nunito', sans-serif; transition: all 0.2s;
+  }
+  .hf-btn.active { background: var(--red); color: white; }
+  .hf-btn:not(.active) { background: white; color: var(--muted); box-shadow: var(--shadow); }
+
+  .history-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .hs-box {
+    background: white; border-radius: 16px; padding: 14px;
+    box-shadow: var(--shadow); display: flex; gap: 10px; align-items: center;
+  }
+  .hs-box .hsb-icon { font-size: 24px; }
+  .hs-box .hsb-val { font-size: 16px; font-weight: 900; line-height: 1.2; }
+  .hs-box .hsb-label { font-size: 10px; color: var(--muted); font-weight: 700; }
+
+  .history-list { background: white; border-radius: 20px; overflow: hidden; box-shadow: var(--shadow); }
+  .hl-header {
+    padding: 14px 16px; border-bottom: 1px solid var(--border);
+    font-size: 13px; font-weight: 900;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .history-item {
+    border-bottom: 1px solid var(--border); overflow: hidden;
+  }
+  .history-item:last-child { border-bottom: none; }
+  .hi-header {
+    padding: 12px 16px; display: flex; align-items: center; gap: 10px;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .hi-header:active { background: #FAFAFA; }
+  .hi-icon {
+    width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  .hi-icon.cash { background: var(--green-light); }
+  .hi-icon.qris { background: var(--red-light); }
+  .hi-icon.transfer { background: var(--gold-light); }
+  .hi-icon.gopay { background: #DCFCE7; }
+  .hi-info { flex: 1; min-width: 0; }
+  .hi-num { font-size: 11px; color: var(--muted); font-weight: 700; }
+  .hi-items-preview { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hi-right { text-align: right; flex-shrink: 0; }
+  .hi-amount { font-size: 14px; font-weight: 900; color: var(--red); }
+  .hi-time { font-size: 10px; color: var(--muted); font-weight: 600; }
+  .hi-detail {
+    padding: 0 16px 12px 62px; display: none;
+    border-top: 1px dashed var(--border);
+    padding-top: 10px;
+  }
+  .hi-detail.open { display: block; }
+  .hi-detail-item { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; }
+  .hi-detail-item span:first-child { color: var(--text); font-weight: 600; }
+  .hi-detail-item span:last-child { font-weight: 800; }
+  .hi-detail-total {
+    display: flex; justify-content: space-between; font-size: 13px; font-weight: 900;
+    border-top: 1px solid var(--border); margin-top: 6px; padding-top: 6px;
+    color: var(--red);
+  }
+  .hi-method-badge {
+    display: inline-block; font-size: 10px; font-weight: 800;
+    padding: 2px 8px; border-radius: 10px; margin-top: 4px;
+  }
+
+  /* Logout button */
+  .logout-btn {
+    position: fixed; bottom: 80px; right: 16px; z-index: 50;
+    background: white; border: 2px solid var(--border);
+    border-radius: 50px; padding: 8px 16px;
+    font-size: 12px; font-weight: 800; color: var(--red);
+    cursor: pointer; font-family: 'Nunito', sans-serif;
+    box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 6px;
+    transition: all 0.2s;
+  }
+  .logout-btn:active { transform: scale(0.95); }
+
   /* Scrollbar hide */
   ::-webkit-scrollbar { display: none; }
   * { scrollbar-width: none; }
@@ -552,6 +673,34 @@
 </style>
 </head>
 <body>
+
+
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-logo">🥟</div>
+  <div class="login-title">Teras Makesa</div>
+  <div class="login-sub">Gerobak Nona Silvi</div>
+  <div class="login-card">
+    <h2>🔐 Masuk Dulu Ya!</h2>
+    <div class="login-field">
+      <label>Username</label>
+      <input type="text" id="loginUser" placeholder="admin" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="••••••" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter') doLogin()">
+    </div>
+    <div class="login-error" id="loginError">❌ Username atau password salah!</div>
+    <button class="btn-login" onclick="doLogin()">Masuk →</button>
+    <div class="login-hint">user: admin &nbsp;|&nbsp; pass: admin</div>
+  </div>
+</div>
+
+<!-- LOGOUT BUTTON -->
+<button class="logout-btn" id="logoutBtn" onclick="doLogout()" style="display:none;">
+  🚪 Keluar
+</button>
 
 <div class="app">
   <!-- HEADER -->
@@ -582,6 +731,10 @@
     <div class="tab" onclick="switchTab('stok')" id="tab-stok">
       <span class="tab-icon">&#128230;</span>
       <span>Stok</span>
+    </div>
+    <div class="tab" onclick="switchTab('history')" id="tab-history">
+      <span class="tab-icon">📋</span>
+      <span>History</span>
     </div>
     <div class="tab" onclick="switchTab('menu')" id="tab-menu">
       <span class="tab-icon">🍽️</span>
@@ -681,6 +834,19 @@
       <button class="btn-add-menu" onclick="openTambahStok()">
         <span style="font-size:20px">&#128229;</span> Tambah / Isi Ulang Stok
       </button>
+    </div>
+  </div>
+
+  <!-- PAGE: HISTORY -->
+  <div class="page" id="page-history">
+    <div class="history-page">
+      <div class="history-filter">
+        <button class="hf-btn active" onclick="filterHistory('hari', this)">Hari Ini</button>
+        <button class="hf-btn" onclick="filterHistory('minggu', this)">Minggu Ini</button>
+        <button class="hf-btn" onclick="filterHistory('semua', this)">Semua</button>
+      </div>
+      <div class="history-summary" id="historySummary"></div>
+      <div class="history-list" id="historyList"></div>
     </div>
   </div>
 
@@ -848,8 +1014,10 @@ let isSyncing = false;
 
 // ── INIT ───────────────────────────────────────────
 function init() {
+  checkLogin();
   updateHeaderDate();
   setInterval(updateHeaderDate, 60000);
+  autoCleanOldData();
   showSyncStatus('loading', '🔄 Menghubungkan ke server...');
   loadFromCloud();
 }
@@ -985,6 +1153,7 @@ function switchTab(name) {
   if (name === 'rekap') renderRekap();
   if (name === 'menu') renderManageList();
   if (name === 'stok') renderStokPage();
+  if (name === 'history') renderHistory();
 }
 
 function renderStokPage() {
@@ -1485,6 +1654,143 @@ function deleteMenu(id) {
   updateCartBar();
   renderMenuGrid();
   renderManageList();
+}
+
+
+// ── AUTH ────────────────────────────────────────────
+const USERS = { admin: 'admin' };
+
+function checkLogin() {
+  const loggedIn = sessionStorage.getItem('kasirLoggedIn');
+  if (loggedIn === '1') {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('logoutBtn').style.display = 'flex';
+  }
+}
+
+function doLogin() {
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginError');
+  if (USERS[user] && USERS[user] === pass) {
+    sessionStorage.setItem('kasirLoggedIn', '1');
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('logoutBtn').style.display = 'flex';
+    errEl.style.display = 'none';
+    vibrate([50, 50, 100]);
+  } else {
+    errEl.style.display = 'block';
+    document.getElementById('loginPass').value = '';
+    vibrate([100, 50, 100]);
+  }
+}
+
+function doLogout() {
+  if (!confirm('Yakin mau keluar?')) return;
+  sessionStorage.removeItem('kasirLoggedIn');
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('logoutBtn').style.display = 'none';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+}
+
+// ── AUTO DELETE DATA > 7 HARI ───────────────────────
+function autoCleanOldData() {
+  const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+  const before = transactions.length;
+  transactions = transactions.filter(function(t) {
+    return Number(t.id) > sevenDaysAgo;
+  });
+  if (transactions.length < before) {
+    saveData();
+    console.log('Auto-deleted ' + (before - transactions.length) + ' old transactions');
+  }
+}
+
+// ── HISTORY ─────────────────────────────────────────
+let historyFilter = 'hari';
+
+function filterHistory(filter, btn) {
+  historyFilter = filter;
+  document.querySelectorAll('.hf-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderHistory();
+}
+
+function getFilteredTrx() {
+  const now = new Date();
+  return transactions.filter(function(t) {
+    const d = new Date(Number(t.id));
+    if (historyFilter === 'hari') return d.toDateString() === now.toDateString();
+    if (historyFilter === 'minggu') {
+      const diff = (now - d) / (1000 * 60 * 60 * 24);
+      return diff <= 7;
+    }
+    return true;
+  });
+}
+
+function renderHistory() {
+  const trxs = getFilteredTrx();
+  const omset = trxs.reduce(function(a, b) { return a + b.total; }, 0);
+  const itemCount = trxs.reduce(function(a, b) {
+    return a + b.items.reduce(function(x, y) { return x + y.qty; }, 0);
+  }, 0);
+
+  document.getElementById('historySummary').innerHTML =
+    '<div class="hs-box"><div class="hsb-icon">💰</div><div><div class="hsb-val">Rp ' + omset.toLocaleString('id') + '</div><div class="hsb-label">Total Omset</div></div></div>' +
+    '<div class="hs-box"><div class="hsb-icon">🧾</div><div><div class="hsb-val">' + trxs.length + ' trx</div><div class="hsb-label">' + itemCount + ' item terjual</div></div></div>';
+
+  if (trxs.length === 0) {
+    document.getElementById('historyList').innerHTML =
+      '<div class="empty-state"><div class="es-icon">📋</div><p>Belum ada transaksi</p><small>Mulai jualan dulu!</small></div>';
+    return;
+  }
+
+  const methodIcon = { cash: '💵', qris: '📱', transfer: '🏦', gopay: '🟢' };
+  const methodLabel = { cash: 'Tunai', qris: 'QRIS', transfer: 'Transfer', gopay: 'GoPay/OVO' };
+  const methodColor = { cash: 'cash', qris: 'qris', transfer: 'transfer', gopay: 'gopay' };
+  const methodBadge = { cash: 'background:var(--green-light);color:var(--green)', qris: 'background:var(--red-light);color:var(--red)', transfer: 'background:var(--gold-light);color:var(--gold)', gopay: 'background:#DCFCE7;color:#16A34A' };
+
+  let html = '<div class="hl-header">&#128203; Riwayat Pembayaran <span>' + trxs.length + ' transaksi</span></div>';
+
+  trxs.forEach(function(t, i) {
+    const preview = t.items.map(function(x) { return x.emoji + ' ' + x.name + ' x' + x.qty; }).join(', ');
+    const icon = methodIcon[t.method] || '💳';
+    const cls = methodColor[t.method] || 'cash';
+    const badge = methodBadge[t.method] || methodBadge.cash;
+    const label = methodLabel[t.method] || t.method;
+
+    let detailRows = t.items.map(function(item) {
+      return '<div class="hi-detail-item"><span>' + item.emoji + ' ' + item.name + ' x' + item.qty + '</span><span>Rp ' + (item.price * item.qty).toLocaleString('id') + '</span></div>';
+    }).join('');
+
+    html += '<div class="history-item">' +
+      '<div class="hi-header" onclick="toggleDetail('hd' + i + '')">' +
+        '<div class="hi-icon ' + cls + '">' + icon + '</div>' +
+        '<div class="hi-info">' +
+          '<div class="hi-num">' + t.num + ' · ' + t.time + '</div>' +
+          '<div class="hi-items-preview">' + preview + '</div>' +
+        '</div>' +
+        '<div class="hi-right">' +
+          '<div class="hi-amount">Rp ' + t.total.toLocaleString('id') + '</div>' +
+          '<span class="hi-method-badge" style="' + badge + '">' + label + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="hi-detail" id="hd' + i + '">' +
+        detailRows +
+        '<div class="hi-detail-total"><span>Total</span><span>Rp ' + t.total.toLocaleString('id') + '</span></div>' +
+        (t.method === 'cash' && t.change > 0 ? '<div style="font-size:11px;color:var(--green);font-weight:700;margin-top:4px;">Kembalian: Rp ' + t.change.toLocaleString('id') + '</div>' : '') +
+      '</div>' +
+    '</div>';
+  });
+
+  document.getElementById('historyList').innerHTML = html;
+}
+
+function toggleDetail(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
 }
 
 // ── UTILS ──────────────────────────────────────────
