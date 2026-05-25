@@ -27,7 +27,7 @@ body{font-family:'Nunito',sans-serif;background:#FFF8F0;color:#1A0A0E;min-height
 .header-left{display:flex;align-items:center;gap:10px;}
 .header-logo{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:20px;}
 .header-title h1{font-family:'Fredoka One',sans-serif;font-size:18px;color:white;line-height:1;}
-.header-title p{font-size:10px;color:rgba(255,255,255,0.8);font-weight:600;}
+.header-title p{font-size:12px;color:rgba(255,255,255,0.8);font-weight:600;}
 .header-right{display:flex;align-items:center;gap:8px;}
 .sync-btn{background:rgba(255,255,255,0.2);border:none;color:white;font-size:10px;font-weight:800;padding:4px 10px;border-radius:10px;cursor:pointer;font-family:Nunito,sans-serif;}
 .logout-btn{background:rgba(255,255,255,0.15);border:none;color:white;font-size:10px;font-weight:800;padding:4px 10px;border-radius:10px;cursor:pointer;font-family:Nunito,sans-serif;}
@@ -286,7 +286,7 @@ body{font-family:'Nunito',sans-serif;background:#FFF8F0;color:#1A0A0E;min-height
   </div>
   <div id="syncBar"></div>
 
-  <!-- TABS (akan diisi oleh JavaScript sesuai role) -->
+  <!-- TABS (diisi JavaScript) -->
   <div class="tabs" id="tabsContainer"></div>
 
   <!-- PAGE KASIR -->
@@ -357,7 +357,7 @@ body{font-family:'Nunito',sans-serif;background:#FFF8F0;color:#1A0A0E;min-height
     </div>
   </div>
 
-</div><!-- end appWrap -->
+</div>
 
 <!-- OVERLAY CART -->
 <div class="overlay" id="ovCart" onclick="closeOv('ovCart',event)">
@@ -451,7 +451,7 @@ body{font-family:'Nunito',sans-serif;background:#FFF8F0;color:#1A0A0E;min-height
 
 <script>
 // ══ CONFIG ══════════════════════════════════════
-const GS = 'https://script.google.com/macros/s/AKfycbwUxLQfVfH8h3kAFWy0nIC4hmzW2VjmlK3GLJxV_5AjHcnd6OnfgACSGVmgbp42ARhrVw/exec';
+const GS = 'https://script.google.com/macros/s/YOUR_GOOGLE_SCRIPT_ID/exec'; // GANTI DENGAN URL APPS SCRIPT KAMU!
 const EMOJIS = ['🥟','🦐','🌯','🧆','🍢','🥩','🫖','🧃','🍜','🥡','🥚','🐔','🦑','🧁','🍱','🍣','🫙','🌶️','🥬','🍄'];
 
 // ══ STATE ════════════════════════════════════════
@@ -564,6 +564,27 @@ function renderTabsByRole() {
   }
 }
 
+function goTab(name) {
+  var adminOnlyPages = ['rekap', 'stok', 'menu', 'akun'];
+  if(adminOnlyPages.includes(name) && (!currentUser || currentUser.role !== 'admin')) {
+    alert('⚠️ Halaman ini hanya untuk Admin!');
+    return;
+  }
+  
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  var pageEl = document.getElementById('page-'+name);
+  if(pageEl) pageEl.classList.add('active');
+  var tabEl = document.getElementById('tab-'+name);
+  if(tabEl) tabEl.classList.add('active');
+  
+  if(name==='rekap' && currentUser?.role==='admin') renderRekap();
+  if(name==='stok' && currentUser?.role==='admin') renderStok();
+  if(name==='history') renderHistory();
+  if(name==='menu' && currentUser?.role==='admin') renderManageList();
+  if(name==='akun' && currentUser?.role==='admin') renderAkunList();
+}
+
 // ══ APP START ════════════════════════════════════
 function startApp() {
   var savedUser = localStorage.getItem('tm_currentUser');
@@ -580,22 +601,6 @@ function startApp() {
   if(currentUser && currentUser.role === 'admin') renderAkunList();
   updateCartBar();
   loadCloud();
-}
-
-// ══ TABS ═════════════════════════════════════════
-function goTab(name) {
-  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
-  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
-  var pageEl = document.getElementById('page-'+name);
-  if(pageEl) pageEl.classList.add('active');
-  var tabEl = document.getElementById('tab-'+name);
-  if(tabEl) tabEl.classList.add('active');
-  
-  if(name==='rekap' && currentUser?.role==='admin') renderRekap();
-  if(name==='stok' && currentUser?.role==='admin') renderStok();
-  if(name==='history') renderHistory();
-  if(name==='menu' && currentUser?.role==='admin') renderManageList();
-  if(name==='akun' && currentUser?.role==='admin') renderAkunList();
 }
 
 // ══ MENU GRID ════════════════════════════════════
@@ -623,7 +628,6 @@ function renderMenuGrid() {
   }).join('');
 }
 
-// ══ CART ═════════════════════════════════════════
 function adjCart(id, delta) {
   var idx=-1;
   for(var i=0;i<cart.length;i++) if(cart[i].id===id){idx=i;break;}
@@ -670,7 +674,6 @@ function openCart() {
   openOv('ovCart');
 }
 
-// ══ PAYMENT ══════════════════════════════════════
 function openPay() {
   closeOvForce('ovCart');
   setTimeout(function(){
@@ -723,7 +726,6 @@ function prosesBayar() {
     cash:cash,change:payMethod==='cash'?cash-total:0
   };
   trxs.unshift(trx);
-  // Kurangi stok
   for(var i=0;i<cart.length;i++){
     var s=stok[cart[i].id]||{qty:0,min:5};
     stok[cart[i].id]={qty:Math.max(0,s.qty-cart[i].qty),min:s.min};
@@ -775,14 +777,17 @@ function renderRekap() {
   var mc={cash:'background:#DCFCE7;color:#16A34A',qris:'background:#FEE2E2;color:#C8102E',transfer:'background:#FEF3C7;color:#D97706',gopay:'background:#DCFCE7;color:#16A34A'};
   var mn={cash:'Tunai',qris:'QRIS',transfer:'Transfer',gopay:'GoPay/OVO'};
   
+  var isAdmin = currentUser && currentUser.role === 'admin';
+  
   document.getElementById('rTrxList').innerHTML=td.map(function(t){
     var prev=t.items.map(function(x){return x.emoji+'x'+x.qty;}).join(' ');
+    var hapusButton = isAdmin ? '<button class="hapus-transaksi-btn" onclick="hapusTransaksi('+t.id+')">🗑️ Hapus</button>' : '';
     return '<div class="trx-item">'+
       '<div class="ti-icon" style="background:#FEE2E2;">'+(ml[t.method]||'💳')+'</div>'+
       '<div class="ti-info"><div class="ti-num">'+t.num+' · '+t.time+'</div><div class="ti-items">'+prev+'</div></div>'+
       '<div class="ti-right"><div class="ti-amt">Rp '+t.total.toLocaleString('id')+'</div>'+
       '<span class="ti-badge" style="'+(mc[t.method]||mc.cash)+'">'+(mn[t.method]||t.method)+'</span>'+
-      '<button class="hapus-transaksi-btn" onclick="hapusTransaksi('+t.id+')">🗑️ Hapus</button>'+
+      hapusButton +
       '</div></div>';
   }).join('');
 }
@@ -812,19 +817,23 @@ function renderHistory(){
   var ml={cash:'💵',qris:'📱',transfer:'🏦',gopay:'🟢'};
   var mn={cash:'Tunai',qris:'QRIS',transfer:'Transfer',gopay:'GoPay/OVO'};
   var mc={cash:'background:#DCFCE7;color:#16A34A',qris:'background:#FEE2E2;color:#C8102E',transfer:'background:#FEF3C7;color:#D97706',gopay:'background:#DCFCE7;color:#16A34A'};
+  
+  var isAdmin = currentUser && currentUser.role === 'admin';
+  
   document.getElementById('histList').innerHTML=
     '<div class="hl-hdr">📋 Riwayat <span style="font-size:11px;color:#9CA3AF;font-weight:600;">'+ft.length+' transaksi</span></div>'+
     ft.map(function(t,i){
       var prev=t.items.map(function(x){return x.emoji+' '+x.name+' x'+x.qty;}).join(', ');
       var det=t.items.map(function(x){return '<div class="hi-det-row"><span>'+x.emoji+' '+x.name+' x'+x.qty+'</span><span>Rp '+(x.price*x.qty).toLocaleString('id')+'</span></div>';}).join('');
       if(t.method==='cash'&&t.change>0) det+='<div style="font-size:10px;color:#16A34A;font-weight:700;margin-top:4px;">Kembalian: Rp '+t.change.toLocaleString('id')+'</div>';
+      var hapusButton = isAdmin ? '<button class="hapus-transaksi-btn" onclick="hapusTransaksi('+t.id+')">🗑️ Hapus</button>' : '';
       return '<div class="hi">'+
         '<div class="hi-top" onclick="togDet(\'hd'+i+'\')">'+
           '<div class="hi-icon '+(t.method||'cash')+'">'+(ml[t.method]||'💳')+'</div>'+
           '<div class="hi-info"><div class="hi-num">'+t.num+' · '+t.time+'</div><div class="hi-prev">'+prev+'</div></div>'+
           '<div class="hi-right"><div class="hi-amt">Rp '+t.total.toLocaleString('id')+'</div>'+
           '<span class="hi-mth" style="'+(mc[t.method]||mc.cash)+'">'+(mn[t.method]||t.method)+'</span>'+
-          '<button class="hapus-transaksi-btn" onclick="hapusTransaksi('+t.id+')">🗑️ Hapus</button>'+
+          hapusButton +
           '</div></div>'+
         '<div class="hi-det" id="hd'+i+'">'+det+
           '<div class="hi-det-total"><span>Total</span><span>Rp '+t.total.toLocaleString('id')+'</span></div>'+
@@ -836,6 +845,11 @@ function togDet(id){var el=document.getElementById(id);if(el)el.classList.toggle
 
 // ══ FUNGSI HAPUS TRANSAKSI ═════════════════════════
 function hapusTransaksi(trxId) {
+  if(!currentUser || currentUser.role !== 'admin') {
+    alert('⚠️ Hanya Admin yang bisa menghapus transaksi!');
+    return;
+  }
+  
   var trxToDelete = null;
   for(var i=0; i<trxs.length; i++) {
     if(trxs[i].id === trxId) {
@@ -856,7 +870,6 @@ function hapusTransaksi(trxId) {
   
   if(!confirm(confirmMsg)) return;
   
-  // Kembalikan stok
   for(var i=0; i<trxToDelete.items.length; i++) {
     var item = trxToDelete.items[i];
     var menuId = null;
@@ -874,7 +887,6 @@ function hapusTransaksi(trxId) {
     }
   }
   
-  // Hapus transaksi
   var newTrxs = [];
   for(var i=0; i<trxs.length; i++) {
     if(trxs[i].id !== trxId) {
@@ -895,10 +907,7 @@ function hapusTransaksi(trxId) {
 
 function syncHapusTransaksi(trxId) {
   try {
-    fetch(GS, {
-      method: 'POST', 
-      body: JSON.stringify({action: 'deleteTrx', id: trxId})
-    });
+    fetch(GS, {method: 'POST', body: JSON.stringify({action: 'deleteTrx', id: trxId})});
   } catch(e) {}
 }
 
